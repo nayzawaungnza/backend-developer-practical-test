@@ -17,7 +17,7 @@ class PostController extends Controller
 {
     public function list()
     {
-        $posts = Post::withCount('likes')->with('tags')->paginate();
+        $posts = Post::with(['tags','author'])->withCount('likes')->paginate();
 
         return new PostCollection($posts);
     }
