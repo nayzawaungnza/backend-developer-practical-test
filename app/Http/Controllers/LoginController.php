@@ -13,25 +13,23 @@ use Symfony\Component\HttpFoundation\Response;
 
 class LoginController extends Controller
 {
+    
     public function login(LoginRequest $request)
     {
         try {
-            $validateUser = $request->validated();
+            $validated = $request->validated();
 
-            if(!Auth::guard('ctj-api')->attempt($validateUser)) {
-                throw new AuthenticationException::withMessage([
-                    'email' => ['The provided credentials are incorrect.'],
-                    'password' => ['The provided credentials are incorrect.'],
-                ]);
+            if (!Auth::guard('ctj-api')->attempt($validated)) {
+                throw new AuthenticationException('The provided credentials are incorrect.');
             }
 
             $user = Auth::guard('ctj-api')->user();
             $token = $user->createToken('ctj-api')->plainTextToken;
 
-            return (new UserResource($user))->additional([
-                'meta' => ['token'=> $token]
-            ]);
-            
+            return response()->json([
+                'token' => $token,
+                'user'  => new UserResource($user),
+            ], Response::HTTP_OK);
             
         } catch (AuthenticationException $e) {
             return response()->json([
@@ -50,4 +48,5 @@ class LoginController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+    
 }

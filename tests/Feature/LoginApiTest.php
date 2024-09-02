@@ -14,7 +14,7 @@ class LoginApiTest extends TestCase
     /** @test */
     public function it_should_login_with_valid_credentials()
     {
-        // Arrange: Create a test user
+        
         $user = User::factory()->create([
             'email' => 'test@example.com',
             'password' => bcrypt($password = 'password123'),
@@ -26,41 +26,41 @@ class LoginApiTest extends TestCase
             'password' => $password,
         ]);
 
-        // Assert: Check the response status and structure
+        
         $response->assertStatus(200)
-                 ->assertJsonStructure(['token']);
+                 ->assertJsonStructure(['token', 'user']);
     }
 
     /** @test */
     public function it_should_fail_login_with_invalid_credentials()
     {
-        // Arrange: Create a test user
+        
         $user = User::factory()->create([
             'email' => 'test@example.com',
             'password' => bcrypt('password123'),
         ]);
 
-        // Act: Make a POST request with incorrect password
+       
         $response = $this->postJson('/api/login', [
             'email' => $user->email,
             'password' => 'wrongpassword',
         ]);
 
-        // Assert: Check the response status and error message
+        
         $response->assertStatus(401)
-                 ->assertJson(['message' => 'Invalid credentials.']);
+                 ->assertJson(['message' => 'The provided credentials are incorrect.']);
     }
 
     /** @test */
     public function it_should_fail_login_with_missing_fields()
     {
-        // Act: Make a POST request with missing fields
+        
         $response = $this->postJson('/api/login', [
             'email' => 'test@example.com',
-            // 'password' is missing
+            
         ]);
 
-        // Assert: Check the response status and validation errors
+        
         $response->assertStatus(422)
                  ->assertJsonValidationErrors(['password']);
     }

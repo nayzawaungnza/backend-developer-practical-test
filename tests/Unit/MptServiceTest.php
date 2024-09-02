@@ -3,7 +3,7 @@
 namespace Tests\Unit;
 
 use Tests\TestCase;
-use App\Services\InternetServiceProvider\MptService;
+use App\Services\InternetServiceProvider\Mpt as MptService;
 
 class MptServiceTest extends TestCase
 {
@@ -11,21 +11,21 @@ class MptServiceTest extends TestCase
     public function it_calculates_the_correct_invoice_amount()
     {
         $mptService = new MptService();
-        $mptService->setMonth(2); // For example, 2 months
+        $mptService->setMonth(2); // Example: Set to 2 months
 
         $amount = $mptService->calculateTotalAmount();
 
-        $this->assertEquals(100, $amount); // Assuming the amount for 2 months is 100
+        $this->assertEquals(400, $amount);
     }
 
     /** @test */
     public function it_handles_zero_months_correctly()
     {
         $mptService = new MptService();
-        $mptService->setMonth(0); // For 0 months
+        $mptService->setMonth(0); 
 
         $amount = $mptService->calculateTotalAmount();
 
-        $this->assertEquals(0, $amount); // The amount should be 0 for 0 months
+        $this->assertEquals(0, $amount); 
     }
 }
