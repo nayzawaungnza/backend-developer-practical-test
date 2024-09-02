@@ -2,19 +2,29 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\InternetServiceProvider\InternetServiceProviderInterface;
 use Illuminate\Http\Request;
+use App\Services\InternetServiceProvider\InternetServiceProviderFactory;
+use App\Services\InternetServiceProvider\InternetServiceProviderInterface;
 
 class InternetServiceProviderController extends Controller
 {
     public function getInvoiceAmount(Request $request, InternetServiceProviderInterface $internetServiceProvider)
     {
-        $month = $request->input('month', 1);
+        try {
+            $month = $request->input('month', 1);
 
-        $internetServiceProvider->setMonth($month);
+            $internetServiceProvider = InternetServiceProviderFactory::create($entity);
 
-        return response()->json([
-            'data' => $internetServiceProvider->calculateTotalAmount(),
-        ]);
+            $internetServiceProvider->setMonth($month);
+
+            return response()->json([
+                'data' => $internetServiceProvider->calculateTotalAmount(),
+            ]);
+
+        } catch (\InvalidArgumentException $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+            ], 400);
+        }
     }
 }
