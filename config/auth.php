@@ -40,6 +40,10 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+        'ctj-api' => [
+            'driver' => 'session', // or 'token' for stateless authentication
+            'provider' => 'users',
+        ],
     ],
 
     /*

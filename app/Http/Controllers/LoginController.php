@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\LoginRequest;
 use App\Http\Resources\LoginResource;
+use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -15,13 +16,23 @@ class LoginController extends Controller
     public function login(LoginRequest $request)
     {
         try {
-            $user = User::where('email', $request->validated('email'))->firstOrFail();
+            $validateUser = $request->validated();
 
-            if (!Auth::attempt($request->validated())) {
-                throw new AuthenticationException('Invalid credentials');
+            if(!Auth::guard('ctj-api')->attempt($validateUser)) {
+                throw new AuthenticationException::withMessage([
+                    'email' => ['The provided credentials are incorrect.'],
+                    'password' => ['The provided credentials are incorrect.'],
+                ]);
             }
 
-            return LoginResource::make($user);
+            $user = Auth::guard('ctj-api')->user();
+            $token = $user->createToken('ctj-api')->plainTextToken;
+
+            return (new UserResource($user))->additional([
+                'meta' => ['token'=> $token]
+            ]);
+            
+            
         } catch (AuthenticationException $e) {
             return response()->json([
                 'status'  => Response::HTTP_UNAUTHORIZED,
