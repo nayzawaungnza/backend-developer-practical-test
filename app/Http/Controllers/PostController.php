@@ -25,27 +25,27 @@ class PostController extends Controller
     public function toggleReaction(PostToggleReactionRequest $request)
     {
         try {
-            $post = Post::query()
-                ->with([
-                    'likes' => function (HasMany $query) {
-                        $query->whereBelongsTo(Auth::user());
-                    },
-                ])
-                ->findOrFail($request->validated('post_id'));
+            $post = Post::with(['likes' => function ($query) {
+                $query->where('user_id', Auth::id());
+            }])
+            ->findOrFail($request->validated('post_id'));
+            
+            if (Gate::denies('like-post', $post)) {
+                throw new UserLikeOwnPostException();
+            }
 
-            // user tries to like his own post
-            throw_if(Gate::denies('like-post', $post), UserLikeOwnPostException::class);
+            $hasLiked = $post->likes->isNotEmpty();
 
-            // user already liked the post
-            if ($post->likes->isNotEmpty()) {
-                // reaction is like the post
-                throw_if($request->boolean('like'), UserAlreadyLikedPostException::class);
+            if ($hasLiked) {
+                if ($request->boolean('like')) {
+                    throw new UserAlreadyLikedPostException();
+                }
 
-                $post->likes->map->delete();
+                $post->likes()->where('user_id', Auth::id())->delete();
 
                 return response()->json([
                     'status'  => Response::HTTP_OK,
-                    'message' => 'You unlike this post successfully',
+                    'message' => 'You unliked this post successfully',
                 ]);
             }
 
@@ -55,8 +55,9 @@ class PostController extends Controller
 
             return response()->json([
                 'status'  => Response::HTTP_OK,
-                'message' => 'You like this post successfully',
+                'message' => 'You liked this post successfully',
             ]);
+            
         } catch (UserLikeOwnPostException $e) {
             return response()->json([
                 'status'  => Response::HTTP_INTERNAL_SERVER_ERROR,
