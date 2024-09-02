@@ -4,5 +4,5 @@ namespace App\Services\EmployeeManagement;
 
 interface NonEmployeeInterface
 {
-    public function applyJob(): bool;
+    public function applyJob(array $data): bool;
 }
